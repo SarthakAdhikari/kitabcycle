@@ -1,0 +1,130 @@
+#+SETUPFILE: ~/org/conf/org-html-themes/setup/theme-readtheorg-local.setup
+#+HTML_HEAD: <style>.listing-number { display: none; } .org-src-name {text-decoration: underline} pre.src{background:#343131;color:white; font-size:1.2rem}</style>
+
+* Django Tutorial
+
+Hello, Welcome to the first post.
+
+This is more of a personal note than a tutorial and our goal is to create an
+application called "KitabCycle". KitabCycle is a C2C website for booksharing.
+
+The feature specs for the project are listed [[/home/sarthak/Documents/Code/KitabCycle/design_documents/filtered-requirements.org][here]]. Let's start!
+** Setting up the environment
+   :PROPERTIES:
+   :header-args: :dir ../
+   :END:
+    We are going to use Docker containers for deployment. Docker containers are
+    processes that share the same kernel as the host operating system but each
+    process is running in its own userspace(unlike VM which has its own kernel).
+    Docker reads instruction from a file called =Dockerfile= to build the
+    container and the first instruction must always be ~FROM <parent-image>~.
+    Further instructions are layers on top of the parent image which in turn
+    build up a new image. We will create a new folder called ~Dockerfile~ in the
+    root directory(same level as ~manage.py~) and add the following:
+    
+#+begin_src dockerfile :noweb-ref parent-image
+FROM python:3.7-alpine
+MAINTAINER Sarthak
+#+end_src
+
+This fetches the image pre-built by docker for python3.7 using the alpine
+distro. Since, we are going to run python inside docker, it is recommended to
+run python in unbuffered mode. This is because it output logs in real time and
+ensure that logs are always printed out and don't disappear during a
+crash(because they were still in the buffer during the crash). So let's do that:
+#+begin_src dockerfile :noweb-ref unbuffered
+ENV PYTHONUNBUFFERED 1 #+end_src
+
+Now we copy our ~requirements.txt~ from our app inside our docker container.
+#+begin_src dockerfile :noweb-ref requirements
+COPY ../requirements.txt ./requirements.txt
+#+end_src
+
+For now ~Dockerfile~ looks like:
+
+#+caption: Dockerfile
+#+begin_src dockerfile :noweb yes :tangle Dockerfile
+  <<parent-image>>
+
+  <<unbuffered>>
+
+  <<requirements>>
+#+end_src
+
+We will keep necessary lines to our ~Dockerfile~ as we go further in the project but this will do for now.
+
+** The core
+*** Initialization
+    :PROPERTIES:
+    :header-args: :dir ../
+    :END:
+  We are going to start by creating a core app.
+
+  #+begin_src shell
+  python manage.py startapp core
+  #+end_src
+
+  #+RESULTS:
+
+  add that to =settings.py= like such:
+  #+begin_src python
+  INSTALLED_APPS = [
+      'django.contrib.admin',
+      'django.contrib.auth',
+      'django.contrib.contenttypes',
+      'django.contrib.sessions',
+      'django.contrib.messages',
+      'django.contrib.staticfiles',
+      'core',
+  ]
+  #+end_src
+
+  #+RESULTS:
+  : None
+
+With that in place, we are ready to write our very first test.
+
+*** Structure of tests
+
+    Before writing our first test, let's quickly discuss how we are going to
+    organize our directory structure for tests in the project. We will follow
+    this directory structure in all the future apps related to this project.
+
+    #+caption: namess
+    #+begin_example :exports results
+     core
+     │    | admin.py    |                |
+     │    | apps.py     |                |
+     │    | __init__.py |                |
+     │    | migrations  |                |
+     │    | └──         |                |
+     │    | tests       |                |
+     │    | └──         |                |
+     │    |             | test_first.py  |
+     │    |             | test_second.py |
+     │    |             | test_third.py  |
+     │    | views.py    |                |
+     │    | models.py   |                |
+
+    #+end_example
+
+    We created a new folder called ~tests~ and all our test files will start
+    with a prefix of ~test_~ followed by the name of the test file. We will
+    follow this structure for all the future apps we create.
+    
+
+*** Writing our first test
+
+    Since, we are following Test Driven Development(TDD) approach, let us
+    understand what it means. At the heard of TDD is the idea of "Test first!".
+    First, we write the test. Then we see if it fails, which is likely to happen
+    because we have not written any code up until this point. Then, we write the
+    code and check if the test passes afterwards. This approach not only allows
+    us to ensure that the code is bug-free but also ensures that the tests are
+    bug-free. If the tests don't pass before writing the code and passes only
+    after writing the code, we can be sure that the test is actually checking
+    for what it was originally supposed to check for.
+
+
+    
+
