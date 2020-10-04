@@ -272,3 +272,4 @@ tags
 # End of https://www.toptal.com/developers/gitignore/api/vim,c++,emacs,macos,python
 
 tutorial/*.html
+tutorial/*.odt
