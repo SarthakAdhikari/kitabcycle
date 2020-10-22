@@ -1,15 +1,17 @@
-#+SETUPFILE: ~/org/conf/org-html-themes/setup/theme-readtheorg-local.setup
-#+HTML_HEAD: <style>.listing-number { display: none; } .org-src-name {text-decoration: underline} pre.src{background:#343131;color:white; font-size:1.2rem}</style>
-#+OPTIONS: num:nil ^:nil \n:t
+#+SETUPFILE: ~/org/conf/org-html-themes/setup/theme-readtheorg.setup
 
+#+HTML_HEAD: <link rel="stylesheet" href="/home/sarthak/org/conf/css/rto_big.css" type="text/css">
+
+#+OPTIONS: num:nil ^:nil \n:t H:6
+#+TITLE: KitabCycle Tutorial Part 1
 * Django Tutorial
 :PROPERTIES:
 :CODE_ROOT: ../
+:header-args: :mkdirp yes
 :END:
 Hello, Welcome to the first post.
 
-This is more of a personal note than a tutorial and our goal is to create an
-application called "KitabCycle". KitabCycle is a C2C website for booksharing.
+This is more of a personal note than a tutorial and our goal is to create an application called "KitabCycle". KitabCycle is a C2C website for booksharing.
 
 The feature specs for the project are listed [[/home/sarthak/Documents/Code/KitabCycle/design_documents/filtered-requirements.org][here]]. Let's start!
 ** Setting up the environment
@@ -17,16 +19,7 @@ The feature specs for the project are listed [[/home/sarthak/Documents/Code/Kita
    :header-args: :dir ../
    :END:
 
-    We are going to use Docker containers for deployment. Docker
-    containers are processes that share the same kernel as the host
-    operating system but each process is running in its own
-    userspace(unlike VM which has its own kernel).  Docker reads
-    instruction from a file called =Dockerfile= to build the container
-    and the first instruction must always be ~FROM <parent-image>~.
-    Further instructions are layers on top of the parent image which
-    in turn build up a new image. We will create a new folder called
-    ~Dockerfile~ in the root directory(same level as ~manage.py~) and add
-    the following:
+    We are going to use Docker containers for deployment. Docker containers are processes that share the same kernel as the host operating system but each process is running in its own userspace(unlike VM which has its own kernel).  Docker reads instruction from a file called =Dockerfile= to build the container and the first instruction must always be ~FROM <parent-image>~.  Further instructions are layers on top of the parent image which in turn build up a new image. We will create a new folder called ~Dockerfile~ in the root directory(same level as ~manage.py~) and add the following:
 
 #+begin_src dockerfile :noweb-ref parent-image
 FROM python:3.7-alpine
@@ -74,11 +67,13 @@ We will keep necessary lines to our ~Dockerfile~ as we go further in the project
     :END:
   We are going to start by creating a core app.
 
-  #+begin_src shell
-  python manage.py startapp core
+#+begin_src shell :ca
+pwd
+python manage.py startapp core
   #+end_src
 
   #+RESULTS:
+  : /home/sarthak/Documents/Code/KitabCycle/kitabcycle
 
   add that to =settings.py= like such:
   #+begin_src python
@@ -89,7 +84,7 @@ We will keep necessary lines to our ~Dockerfile~ as we go further in the project
       'django.contrib.sessions',
       'django.contrib.messages',
       'django.contrib.staticfiles',
-      'core',
+      'core.app.CoreConfig',
   ]
   #+end_src
 
@@ -100,10 +95,7 @@ With that in place, we are ready to write our very first test.
 
 *** Structure of tests
 
-    Before writing our first test, let's quickly discuss how we are
-    going to organize our directory structure for tests in the
-    project. We will follow this directory structure in all the future
-    apps related to this project.
+    Before writing our first test, let's quickly discuss how we are going to organize our directory structure for tests in the project. We will follow this directory structure in all the future apps related to this project.
 
     #+caption: structure of test directories
     #+begin_example :exports results
@@ -124,7 +116,7 @@ With that in place, we are ready to write our very first test.
     #+end_example
 
     We created a new folder called ~tests~ and all our test files will start
-    with a prefix of ~test_~ followed by the name of the test file. We will
+    with a prefix of ~test*~ followed by the name of the test file. We will
     follow this structure for all the future apps we create.
 
 *** Core App
@@ -134,23 +126,12 @@ With that in place, we are ready to write our very first test.
      :END:
 ****  Writing our first test
 
- Since, we are following Test Driven Development(TDD) approach, let us
- understand what it means. At the heard of TDD is the idea of "Test first!".
- First, we write the test. Then we see if it fails, which is likely to happen
- because we have not written any code up until this point. Then, we write the
- code and check if the test passes afterwards. This approach not only allows
- us to ensure that the code is bug-free but also ensures that the tests are
- bug-free. If the tests don't pass before writing the code and passes only
- after writing the code, we can be sure that the test is actually checking
- for what it was originally supposed to check for.
+ Since, we are following Test Driven Development(TDD) approach, let us describe it in a few words before we start. At the heard of TDD is the idea of "Test first!".  First, we write the test. Then we see if it fails, which is likely to happen because we would not have written any code up until that point. Then, we write the code and check if the test passes afterwards. This approach not only allows us to ensure that the code is bug-free but also ensures that the tests are bug-free. If the tests don't pass before writing the code and passes only after writing the code, we can be sure that the test is actually checking for what it was originally supposed to check for.
 
 
- We are going to implement the Custom user model feature first. But
- before that, we must write a test. Our user model is going to have an
- email field unlike the default django username field. So, let us
- start by testing whether we can successfully register a user using an
- email address. Let's start with the imports:
+ We are going to implement the Custom user model feature first. But before that, we must write a test. Our user model is going to have an email field unlike the default django username field. So, let us start by testing whether we can successfully register a user using an email address. Let's start with the imports:
 
+#+caption: core/tests/test_models.py
  #+begin_src python  :noweb-ref test-model-imports
 from django.test import TestCase
 from django.contrib.auth import get_user_model
@@ -158,9 +139,7 @@ from django.contrib.auth import get_user_model
 from core import models
  #+end_src
 
- ~django.TestCase~ creates a clean database and runs every test in its
- own transaction. In other words, every test will create its own
- tables which in some cases might cause the tests to run slower.
+ ~django.TestCase~ creates a clean database and runs every test in its own transaction. In other words, every test will create its own tables which in some cases might cause the tests to run slower.
 
  #+begin_src python  :noweb-ref test-model-declaration :exports code
 class ModelTests (TestCase):
@@ -179,15 +158,26 @@ def test_create_user_with_email_sucessful(self):
 #+end_src
 
 + Test 2 :: Check whether the email address we use is normalized.
- #+begin_src python  :noweb-ref test-create-user-with-email-sucessfull :exports code
+ #+begin_src python  :noweb-ref test-create-user-with-email-normalized :exports code
 def test_create_user_with_email_normalized(self):
     '''Test that email of new user is normalized.'''
     email = "test@EXAMPLE.COM"
     password = "test@123user"
     created_user = get_user_model().objects.create_user(email=email,
                                                     password=password)
-    self.assertEqual(self.created_user.email, self.email.lower())
+    self.assertEqual(created_user.email, email.lower())
 #+end_src
+
++ Test 3 :: Check that creating user without email is not accepted.
+#+begin_src python  :noweb-ref test-create-user-with-invalid-email :exports code
+def test_create_user_with_invalid_email(self):
+    '''Test that creating user without email raises an error.'''
+    with self.assertRaises(ValueError):
+        password = "test@123user"
+        created_user = get_user_model().objects.create_user(email=None,
+                                                    password=password)
+#+end_src
+
 
 Here's what our =tests/test_models.py= looks like right now:
 #+caption: core/tests/test_models.py
@@ -198,16 +188,17 @@ Here's what our =tests/test_models.py= looks like right now:
     <<test-create-user-with-email-sucessful>>
 
     <<test-create-user-with-email-normalized>>
+
+    <<test-create-user-with-invalid-email>>
  #+end_src
 
-Remember how we said we first deliberately write a test that fails?
-Let's see it in action:
+Remember how we said we first deliberately write a test that fails?  Let's see it in action:
 
-#+begin_src sh :session run-in-root :exports none :results silent
+#+begin_src sh :session run-in-code-root-dir :exports none :results silent
 cd "$(git rev-parse --show-toplevel)"
 #+end_src
 
-#+begin_src sh  :exports both :session run-in-root :results scalar
+#+begin_src sh  :exports both :session run-in-code-root-dir :results scalar :eval no
 python manage.py test
 #+end_src
 
@@ -235,3 +226,206 @@ Destroying test database for alias 'default'...
 Good news! Our tests failed. That means we are ready to move on to writing the code to fix it.
 
 **** Custom User Model
+
+     We got ~create_user() missing 1 required positional argument: 'username'~ so lets see what ~create_user()~ expects.
+
+#+begin_src python :exports none
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import UserManager, User, AbstractUser, EmptyManager
+#+end_src
+
+
+#+begin_src python :eval no
+def create_user(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(username, email, password, **extra_fields)
+#+end_src
+
+In our tests, we did not pass the username field which is a required field and instead did this:
+#+begin_src python :eval no
+created_user = get_user_model().objects.create_user(email=email,
+                                                    password=password)
+#+end_src
+
+To fix this, we should override the ~create_user~ method to accept email instead of username.
+
+Start with imports:
+#+caption: models.py
+#+begin_src python :noweb-ref core-model-imports
+from django.contrib.gis.db import models
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
+from django.db.models.signals import post_save
+from django.conf import settings
+
+#+end_src
+
+Then, write a custom ~User~ manager that accepts an email as the username.
+
+
+#+begin_src python  :noweb-ref custom-user-manager
+class UserManager(BaseUserManager):
+    def create_user(self, email, password=None, **kwargs):
+        if not email:
+            # otherwise it returns TypeError if we pass email=None
+            raise ValueError("Users must have an email address.")
+        user = self.model(email=self.normalize_email(email), **kwargs)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **kwargs):
+        user = self.create_user(email,password)
+        user.is_staff = True
+        user.is_admin = True
+        user.save(using=self._db)
+        return user
+
+
+        #+end_src
+
+Create a new ~User~ model that uses the UserManager we described above:
+#+begin_src python  :noweb-ref custom-user-manager
+class User(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(max_length=255, unique=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+
+
+    # get_user_model().objects.create(username=email, password=password)
+ #+end_src
+
+So, for now our =core/models.py= looks like:
+#+caption: core/models.py
+#+begin_src python  :noweb yes :tangle (concat (org-entry-get nil "CORE_DIR" t) "models.py")
+<<core-model-imports>>
+
+<<custom-user-manager>>
+<<custom-user-model>>
+<<user-profile>>
+ #+end_src
+
+Let's run the test again:
+#+begin_src sh :session run-in-code-root-dir :exports both :results scalar append :eval no
+python manage.py makemigrations --no-color
+python manage.py migrate --no-color
+python manage.py test
+#+end_src
+
+#+RESULTS:
+#+begin_example
+No changes detected
+Operations to perform:
+  Apply all migrations: admin, auth, contenttypes, sessions
+Running migrations:
+  No migrations to apply.
+System check identified no issues (0 silenced).
+
+----------------------------------------------------------------------
+Ran 0 tests in 0.000s
+
+OK
+#+end_example
+
+
+So, we have successfully created a user model which accepts ~email~ as a primary key instead of the default ~username~.
+
+**** User Profile
+
+Now, we create the user profile realted to the user. This one should be easier than the above. But, we must resist the temptation to start writing the code immidiately and start with a test.
+
+Let's test that any user we create has a profile attribute associated with it.
+#+begin_src python  :noweb-ref test-create-user-with-invalid-email :exports
+def test_create_user_with_profile_sucessful(self):
+    created_user = get_user_model()(email="asd@asd.com", password="password123")
+    self.assertTrue(hasattr(created_user, 'profile_set'))
+#+end_src
+
+
+Let's run the test:
+#+begin_src sh :session run-in-code-root-dir :exports both :results scalar :eval no
+python manage.py test
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Creating test database for alias 'default'...
+System check identified no issues (0 silenced).
+...F
+======================================================================
+FAIL: test_create_user_with_profile_sucessful (core.tests.test_models.ModelTests)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/sarthak/Documents/Code/KitabCycle/kitabcycle/core/tests/test_models.py", line 31, in test_create_user_with_profile_sucessful
+    self.assertTrue(hasattr(created_user, 'profile'))
+AssertionError: False is not true
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.362s
+
+FAILED (failures=1)
+Destroying test database for alias 'default'...
+#+end_example
+
+Our tests failed to find the profile attribute which is as expected.
+
+Let's add a ~Profile~ model and create a signal to associate a profile with the user as soon as a new user is created.
+
+#+caption: core/profile.py
+#+begin_src python  :noweb-ref custom-user-manager
+class Profile(models.Model):
+    name = models.CharField(max_length=250)
+    bio = models.CharField(max_length=1000)
+    location_point = models.PointField(blank=True, null=True, srid=4326)
+    phone_number = models.BigIntegerField(null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+#+end_src
+
+And lets create a signal that associates a profile with a user as soon a new  user is created.
+
+#+caption: core/signals.py
+#+begin_src python  :noweb-ref profile-create-signal :tangle (concat (org-entry-get nil "CORE_DIR" t) "signals.py")
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.conf import settings
+
+from .models import User, Profile
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user_id=instance.id)
+#+end_src
+
+We need to register our signal in ~core/apps.py~ like so:
+#+begin_src python  :tangle (concat (org-entry-get nil "CORE_DIR" t) "signals.py")
+from django.apps import AppConfig
+
+
+class CoreConfig(AppConfig):
+    name = 'core'
+
+    def ready(self):
+        from . import signals #NOQA
+#+end_src
+
+Let's run our test to see if a profile is created when we create a new user:
+#+begin_src sh :exports both :results scalar :dir ../ :results output  :prologue "exec 2>&1" :epilogue ":" :eval no
+python manage.py test
+#+end_src
+
+#+RESULTS:
+: Creating test database for alias 'default'...
+: ....
+: ----------------------------------------------------------------------
+: Ran 4 tests in 0.336s
+:
+: OK
+: Destroying test database for alias 'default'...
+: System check identified no issues (0 silenced).
+
+All clear! So, we now have a ~User~ model and a ~Profile~ model corresponding to the user.

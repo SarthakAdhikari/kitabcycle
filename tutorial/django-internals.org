@@ -1,0 +1,228 @@
+#+SETUPFILE: ~/org/conf/org-html-themes/setup/theme-readtheorg.setup
+
+#+HTML_HEAD: <link rel="stylesheet" href="/home/sarthak/org/conf/css/rto_big.css" type="text/css">
+
+#+TITLE: Django Internals
+#+OPTIONS: num:nil ^:nil \n:t
+
+* Django User
+
+** Django User Models
+
+Django has 4 kinds of users by default:
+1) [[AbstractBaseUser]]
+2) [[*AbstractUser][AbstractUser]]
+3) [[*User][User]]
+4) [[*AnonymousUser][AnonymousUser]]
+
+** Django User Managers
+
+*** AbstractBaseUser
+#+begin_src python :exports none
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import UserManager, User, AbstractUser, EmptyManager
+#+end_src
+
+The first kind of ~User~ is ~AbstractBaseUser~ and this is where django defines the password for the user.
+
+#+caption: AbstractBaseUser
+#+begin_src python :eval no
+class AbstractBaseUser(models.Model):
+    password = models.CharField(_('password'), max_length=128)
+    last_login = models.DateTimeField(_('last login'), blank=True, null=True)
+    is_active = True
+    REQUIRED_FIELDS = []
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+    def save(self, *args, **kwargs):
+    def get_username(self):
+    def clean(self):
+    def natural_key(self):
+    def is_anonymous(self):
+    def is_authenticated(self):
+    def set_password(self, raw_password):
+    def check_password(self, raw_password):
+        def setter(raw_password):
+    def set_unusable_password(self):
+    def has_usable_password(self):
+    def _legacy_get_session_auth_hash(self):
+    def get_session_auth_hash(self):
+    def get_email_field_name(cls):
+    def normalize_username(cls, username):
+
+#+end_src
+Since it is an abstract model, these fields will be inherited to all models which inherit from ~AbstractBaseUser~ but the *table for ~AbstractBaseUser~ will not be created*.
+*** AbstractUser
+
+There is a similarly named ~AbstractUser~ that is defined as follows:
+
+#+caption: AbstractUser
+#+begin_src python
+class AbstractUser(AbstractBaseUser, PermissionsMixin):
+    """
+    An abstract base class implementing a fully featured User model with
+    admin-compliant permissions.
+
+    Username and password are required. Other fields are optional.
+    """
+    username_validator = UnicodeUsernameValidator()
+
+    username = models.CharField(
+        _('username'),
+        max_length=150,
+        unique=True,
+        help_text=_('Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'),
+        validators=[username_validator],
+        error_messages={
+            'unique': _("A user with that username already exists."),
+        },
+    )
+    first_name = models.CharField(_('first name'), max_length=150, blank=True)
+    last_name = models.CharField(_('last name'), max_length=150, blank=True)
+    email = models.EmailField(_('email address'), blank=True)
+    is_staff = models.BooleanField(
+        _('staff status'),
+        default=False,
+        help_text=_('Designates whether the user can log into this admin site.'),
+    )
+    is_active = models.BooleanField(
+        _('active'),
+        default=True,
+        help_text=_(
+            'Designates whether this user should be treated as active. '
+            'Unselect this instead of deleting accounts.'
+        ),
+    )
+    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+
+    objects = UserManager()
+    EMAIL_FIELD = 'email'
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
+
+    class Meta:
+        verbose_name = _('user')
+        verbose_name_plural = _('users')
+        abstract = True
+
+
+    def clean(self):
+    def get_short_name(self):
+    def email_user(self, subject, message, from_email=None, **kwargs):
+    def get_full_name(self):
+#+end_src
+
+*** User
+The ~User~ only contains two lines and looks like the following:
+
+#+begin_src python :eval no
+class User(AbstractUser):
+    """ Username and password are required. Other fields are optional."""
+    class Meta(AbstractUser.Meta):
+        swappable = 'AUTH_USER_MODEL'
+
+#+end_src
+*** AnonymousUser
+  The last remaining user type is ~Anonymoususer~ and its signature looks like:
+  #+begin_src python :eval no
+class AnonymousUser:
+    id = None
+    pk = None
+    username = ''
+    is_staff = False
+    is_active = False
+    is_superuser = False
+    _groups = EmptyManager(Group)
+    _user_permissions = EmptyManager(Permission)
+
+    def __str__(self):
+    def __eq__(self, other):
+    def __hash__(self):
+    def __int__(self):
+    def save(self):
+    def delete(self):
+    def set_password(self, raw_password):
+    def check_password(self, raw_password):
+    def groups(self):
+    def user_permissions(self):
+    def get_user_permissions(self, obj=None):
+    def get_group_permissions(self, obj=None):
+    def get_all_permissions(self, obj=None):
+    def has_perm(self, perm, obj=None):
+    def has_perms(self, perm_list, obj=None):
+    def has_module_perms(self, module):
+    def is_anonymous(self):
+    def is_authenticated(self):
+    def get_username(self):
+  #+end_src
+
+** Django User Managers
+
+There are a few ~Managers~ defined in ~django.contrib.auth.manager~ but the most important for our purposes are these two:
+1) [[*BaseUserManager][BaseUserManager]]
+2) [[*UserManager][UserManager]]
+*** BaseUserManager
+ The definition of ~BaseUserManager~ looks as follows:
+
+ #+begin_src python :exports code :eval never
+class BaseUserManager(models.Manager):
+    @classmethod
+    def normalize_email(cls, email)
+    def make_random_password(self, length=10,
+                             allowed_chars='abcdefghjkmnpqrstuvwxyz'
+    def get_by_natural_key(self, username)
+ #+end_src
+
+*** UserManager
+ #+begin_src python :eval no
+class UserManager(BaseUserManager):
+    def _create_user(self, username, email, password, **extra_fields):
+    def create_user(self, username, email=None, password=None, **extra_fields):
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+    def with_perm(self, perm, is_active=True, include_superusers=True, backend=None, obj=None):
+ #+end_src
+*** PermissionMixin
+#+begin_src python
+
+class PermissionsMixin(models.Model):
+    is_superuser = models.BooleanField(
+        _('superuser status'),
+        default=False,
+        help_text=_(
+            'Designates that this user has all permissions without '
+            'explicitly assigning them.'
+        ),
+    )
+    groups = models.ManyToManyField(
+        Group,
+        verbose_name=_('groups'),
+        blank=True,
+        help_text=_(
+            'The groups this user belongs to. A user will get all permissions '
+            'granted to each of their groups.'
+        ),
+        related_name="user_set",
+        related_query_name="user",
+    )
+    user_permissions = models.ManyToManyField(
+        Permission,
+        verbose_name=_('user permissions'),
+        blank=True,
+        help_text=_('Specific permissions for this user.'),
+        related_name="user_set",
+        related_query_name="user",
+    )
+
+    class Meta:
+        abstract = True
+
+    def get_user_permissions(self, obj=None):
+    def get_group_permissions(self, obj=None):
+    def get_all_permissions(self, obj=None):
+    def has_perm(self, perm, obj=None):
+    def has_perms(self, perm_list, obj=None):
+    def has_module_perms(self, app_label):
+#+end_src
