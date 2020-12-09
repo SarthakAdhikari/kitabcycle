@@ -1,0 +1,45 @@
+# -*- restclient -*-
+# CREATE-AD
+POST http://localhost:8000/create-ad
+Content-Type: application/json
+
+{
+        "title": "The Tibetan book of the Dead",
+        "description": "The first complete translation of a classic Buddhist text on the journey through living and dying. Graced with opening words by His Holiness The Dalai Lama, the Penguin Deluxe Edition of The Tibetan Book of the Dead is 'immaculately rendered in an English both graceful and precise.' Translated with the close support of leading contemporary masters and hailed as “a tremendous accomplishment,” this book faithfully presents the insights and intentions of the original work. It includes one of the most detailed and compelling descriptions of the after-death state in world literature, practices that can transform our experience of daily life, guidance on helping those who are dying, and an inspirational perspective on coping with bereavement. ",
+        "ad_type": "buy",
+        "book": {
+                "name": "The Tibetan Book of the Dead",
+                "ISBN": 1231231232,
+                "category": 1,
+                "condition": "excellent"
+        },
+        "price": {
+                "type": 1,
+                "original": 1500,
+                "final": 800
+        },
+        "pictures": {
+
+        }
+}
+
+# AD VIEWSET
+POST http://localhost:8000/ads/
+Content-Type: application/json
+
+{
+        "title": "The Tibetan book of the Dead",
+        "description": "The first complete translation of a classic Buddhist text on the journey through living and dying. Graced with opening words by His Holiness The Dalai Lama, the Penguin Deluxe Edition of The Tibetan Book of the Dead is 'immaculately rendered in an English both graceful and precise.' Translated with the close support of leading contemporary masters and hailed as “a tremendous accomplishment,” this book faithfully presents the insights and intentions of the original work. It includes one of the most detailed and compelling descriptions of the after-death state in world literature, practices that can transform our experience of daily life, guidance on helping those who are dying, and an inspirational perspective on coping with bereavement. ",
+        "ad_type": 1,
+        "book": {
+                "name": "The Tibetan Book of the Dead",
+                "ISBN": 1231231232,
+                "category": 1,
+                "condition": 1
+        },
+        "price": {
+                "price_type": 1,
+                "original": 1500,
+                "final": 800
+        }
+}

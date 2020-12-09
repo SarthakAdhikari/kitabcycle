@@ -18,10 +18,9 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **kwargs):
         user = self.create_user(email,password)
         user.is_staff = True
-        user.is_admin = True
+        user.is_superuser = True
         user.save(using=self._db)
         return user
-
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(max_length=255, unique=True)
@@ -32,10 +31,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     USERNAME_FIELD = 'email'
 
 
-    # get_user_model().objects.create(username=email, password=password)
+    def __str__(self):
+        return self.email
+
 class Profile(models.Model):
     name = models.CharField(max_length=250)
     bio = models.CharField(max_length=1000)
     location_point = models.PointField(blank=True, null=True, srid=4326)
     phone_number = models.BigIntegerField(null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'id: {self.id}, name: {self.name}'
