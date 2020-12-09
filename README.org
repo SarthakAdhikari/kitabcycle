@@ -1,0 +1,18 @@
+# -*- mode: org; -*-
+#+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+HTML_HEAD: <link rel="stylesheet" href="/home/sarthak/org/conf/css/rto_big.css" type="text/css">
+#+OPTIONS: num:nil ^:nil \n:t H:6
+#+TITLE: Kitab Cycle
+
+* Kitab Cycle
+
+KitabCycle is a Customer-to-Customer website for selling second hand books.
+
+[[./docs/images/logo.png]]
+** For Buyers:
++ Save 2-3x times the amount of original
++ Buy more books with the amount you saved :)
+
+** For Sellers:
++ No more recycling expensive books for pennies.
++ Help fellow readers by providing your used books at a cheaper price.
