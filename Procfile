@@ -1,0 +1,1 @@
+web: gunicorn kitabcycle.wsgi --log-file -
