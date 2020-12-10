@@ -1,10 +1,16 @@
-from ads.models import Ad, Book, Category, Condition, Price, PriceType
+from ads.models import Ad, Book, Category, Condition, Price, PriceType, AdType
 from rest_framework import serializers
 
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
+        fields = '__all__'
+
+class AdTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = AdType
         fields = '__all__'
 
 class ConditionSerializer(serializers.ModelSerializer):
@@ -20,6 +26,12 @@ class PriceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Price
         fields = ('original', 'final', 'price_type')
+
+class PriceTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PriceType
+        fields = '__all__'
 
 class BookSerializer(serializers.ModelSerializer):
     class Meta:

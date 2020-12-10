@@ -1,13 +1,28 @@
-from django.shortcuts import render
-from rest_framework import viewsets, views
-from rest_framework.response import  Response
+from rest_framework import viewsets
 
-from ads.models import Ad
-# AdType, Book, Category, Conditin, PriceType, Price
+from ads.models import Ad, AdType, Category, PriceType
 
-from api.v1.serializers.ads import AdSerializer, BookSerializer, PriceSerializer
+from api.v1.serializers.ads import (AdSerializer,
+                                    AdTypeSerializer,
+                                    CategorySerializer,
+                                    PriceTypeSerializer)
 
 
 class AdViewSet(viewsets.ModelViewSet):
     serializer_class = AdSerializer
     queryset = Ad.objects.all()
+
+
+class AdTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = AdTypeSerializer
+    queryset = AdType.objects.all()
+
+
+class PriceTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = PriceTypeSerializer
+    queryset = PriceType.objects.all()
+
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
