@@ -6,7 +6,7 @@ router = routers.DefaultRouter()
 
 router.register('ads', AdViewSet, basename='ads')
 router.register('ad_type', AdTypeViewSet, basename='ad_type')
-router.register('price_type', AdTypeViewSet, basename='price_type')
-router.register('category', AdTypeViewSet, basename='category')
+router.register('price_type', PriceTypeViewSet, basename='price_type')
+router.register('category', CategoryViewSet, basename='category')
 
 urlpatterns = router.urls
